@@ -21,8 +21,9 @@ Throughout this project, R was used to visualize demographic trends and analyze 
   <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/race%202.png" alt="Homelessness by Race 2" width="45%">
 </div>  
 *Figure 4 & 5: Homelessness by Race*
-![Homelessness among Veterans](https://github.com/Riyashab/Homelessness-/blob/main/veterans.png)
-*Figure 6: Homelessness among veterans*
+
+![Homelessness among Veterans](https://raw.githubusercontent.com/Riyashab/Homelessness-/main/veterans.png)  
+*Figure 6: Homelessness among Veterans*
 
 ## Power BI Dashboard
 
@@ -33,7 +34,7 @@ We used Power BI to analyze and visualize homelessness and related trends across
 - Post-2020 increase in homelessness linked to the pandemic
 - Chronic Homelessness: PSH beds are increasing, but chronic homelessness remains a challenge.
 - Drug Overdose in California: Opioids and synthetic drugs are the leading causes of overdose deaths.
-- 	Demographics: The 	35–44 age group and racial minorities are most affected and Veteran homelessness is steadily declining.
+- Demographics: The 	35–44 age group and racial minorities are most affected and Veteran homelessness is steadily declining.
 
 
 
