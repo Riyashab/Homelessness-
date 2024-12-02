@@ -36,7 +36,7 @@ We used Power BI to analyze and visualize homelessness and related trends across
 - Drug Overdose in California: Opioids and synthetic drugs are the leading causes of overdose deaths.
 - Demographics: The 	35–44 age group and racial minorities are most affected and Veteran homelessness is steadily declining.
 
-View the interactive Power BI dashboard [clicking here](YOUR_POWERBI_LINK).
+View the interactive Power BI dashboard [clicking here]([YOUR_POWERBI_LINK](https://csusm-my.sharepoint.com/personal/roney007_csusm_edu/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Froney007%5Fcsusm%5Fedu%2FDocuments%2F2024%2D2025%2FUpdated%20Power%20BI%20Dashboard%2Epbix&parent=%2Fpersonal%2Froney007%5Fcsusm%5Fedu%2FDocuments%2F2024%2D2025&ct=1733105881030&or=OWA%2DNT%2DMail&cid=66131f8e%2D0cd7%2D1d4e%2Dd8c4%2Ddb2b5563bf4f&ga=1)).
 
 ![Power BI Dashboard Preview](https://raw.githubusercontent.com/your-username/your-repository/main/dashboard-preview.png)
 
