@@ -1,0 +1,206 @@
+title: "Final R project 2"
+output: html_document
+date: "2024-11-27"
+---
+
+```{r}
+library(here)
+library(readxl)
+library(readxlsb)
+library(tidyverse)
+library(purrr)
+library(httr)
+library(readr)
+library(maps)
+library(dplyr)
+library(stringr)
+library(scales)
+library(ggplot2)
+library(viridis)
+
+```
+
+```{r}
+# Define the path to the "My Data" directory using here()
+my_data_path <- here("My Data")
+
+# Construct the full paths for each file
+file1 <- file.path(my_data_path, "2007-2023-HIC-Counts-by-CoC.xlsx")
+HIC_Counts_by_County <- read_excel(file1, skip = 1)
+HIC_Counts_by_County
+
+file2 <- file.path(my_data_path, "2007-2023-HIC-Counts-by-State.xlsx")
+HIC_Counts_by_State<- read_excel(file2, skip = 1)
+HIC_Counts_by_State
+
+file3 <- file.path(my_data_path, "2007-2023-PIT-Counts-by-CoC.xlsb")
+PIT_Counts_by_County<- read_xlsb(file3,
+                                 range = "2023!A1:XU387")
+PIT_Counts_by_County
+
+file4 <- file.path(my_data_path, "2007-2023-PIT-Counts-by-State.xlsb")
+PIT_Counts_by_State<- read_xlsb(file4,
+                                range = "2023!A1:XU387") 
+PIT_Counts_by_State
+
+file5 <- file.path(my_data_path, "2011-2023-PIT-Veteran-Counts-by-CoC.xlsx")
+PIT_Veteran_Counts_by_County<- read_excel(file5)
+PIT_Veteran_Counts_by_County
+
+file6 <- file.path(my_data_path, "2011-2023-PIT-Veteran-Counts-by-State.xlsx")
+PIT_Veteran_Counts_by_State<- read_excel(file6)
+PIT_Veteran_Counts_by_State
+
+file7 <- file.path(my_data_path, "2023-HIC-Counts-by-State.csv")
+HIC_Counts_by_State<- read.csv(file7)
+HIC_Counts_by_State
+
+file8 <- file.path(my_data_path, "Raw File.csv")
+Raw_File<-read.csv(file8)
+Raw_File
+
+file9 <- file.path(my_data_path, "VSRR_Provisional_Drug_Overdose_Death_Counts.csv")
+Drug_Death_Counts<-read.csv(file9)
+Drug_Death_Counts
+
+
+
+```
+
+
+```{r}
+# Extracting the relevant columns for the age group totals from row 58 (columns 4 to 10)
+totals_row <- PIT_Counts_by_State[57, 4:10]
+
+print(totals_row)
+
+```
+
+```{r}
+# Cleaning the extracted values by removing any non-numeric characters 
+totals_row_cleaned <- gsub("[^0-9.]", "", totals_row)
+totals_row_numeric <- as.numeric(totals_row_cleaned)
+
+print(totals_row_numeric)
+
+```
+
+
+```{r}
+# Creating the data frame with the totals
+total_homelessness_df <- data.frame(
+  Age_Group = c("Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+"),
+  Total_Count = totals_row_numeric
+)
+
+
+print(total_homelessness_df)
+
+```
+
+
+```{r}
+# Setting ordering 
+total_homelessness_df$Age_Group <- factor(
+  total_homelessness_df$Age_Group, 
+  levels = c("Under 18", "18-24", "25-34", "35-44", "45-54", "55-64", "65+")
+)
+
+```
+
+
+
+```{r}
+
+# Bar chart for homelessness by age group in 2023
+ggplot(total_homelessness_df, aes(x = Age_Group, y = Total_Count, fill = Age_Group)) +
+  geom_bar(stat = "identity", show.legend = FALSE) + 
+  geom_text(aes(label = scales::comma(Total_Count)), 
+            vjust = -0.3,  
+            color = "black", 
+            size = 3.5) +  
+  labs(
+    title = "Total Number of Homeless Individuals by Age Group in 2023", 
+    x = "Age Group", 
+    y = "Total Count"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 0.5, size = 12),  
+    axis.title.x = element_text(margin = margin(t = 10)),  
+    axis.title.y = element_text(margin = margin(r = 10)), 
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  #
+    plot.title.position = "plot",  
+    plot.margin = margin(t = 30, b = 20, l = 20, r = 20),  
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()  
+  ) +
+  scale_y_continuous(labels = scales::comma) +  
+  scale_fill_viridis_d(option = "D", direction = 1)  
+
+```
+percent 
+```{r}
+# Calculate proportions
+total_homelessness_df$Proportion <- total_homelessness_df$Total_Count / sum(total_homelessness_df$Total_Count)
+
+# Bar chart for homelessness proportions by age group in 2023
+ggplot(total_homelessness_df, aes(x = Age_Group, y = Proportion, fill = Age_Group)) +
+  geom_bar(stat = "identity", show.legend = FALSE) + 
+  geom_text(aes(label = scales::percent(Proportion, accuracy = 0.1)),  
+            vjust = -0.3,  
+            color = "black", 
+            size = 3.5) +  
+  labs(
+    title = "Proportion of Homeless Individuals by Age Group in 2023", 
+    x = "Age Group", 
+    y = "Proportion"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 0, hjust = 0.5, size = 12),  
+    axis.title.x = element_text(margin = margin(t = 10)),  
+    axis.title.y = element_text(margin = margin(r = 10)), 
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),  
+    plot.title.position = "plot",  
+    plot.margin = margin(t = 30, b = 20, l = 20, r = 20),  
+    panel.grid.major = element_blank(), 
+    panel.grid.minor = element_blank()  
+  ) +
+  scale_y_continuous(labels = scales::percent) +  
+  scale_fill_viridis_d(option = "D", direction = 1)  
+
+
+```
+
+
+```{r}
+# Chart for CA county
+ggplot(PIT_Counts_by_County_CA_Area, 
+       aes(x = CoC.Category, 
+           y = Overall.Homeless, 
+           fill = Overall.Homeless)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  scale_fill_viridis_c() +
+  labs(title = "Total Number of Homeless Individuals In CA by County Type", 
+       x = "County Type", 
+       y = "Number of Homeless Individuals",
+       fill = "Count") +
+  theme_minimal() +
+  theme(
+   
+    plot.title = element_text(hjust = 0.5, angle = 0),
+    axis.text.x = element_text(angle = 0, hjust = 0.5, size = 10), 
+    axis.title.x = element_text(margin = margin(t = 10)),   
+    axis.title.y = element_text(margin = margin(r = 10)),
+    panel.grid = element_blank(),
+    plot.margin = margin(t = 20, r = 20, b = 20, l = 20)
+  ) +
+  scale_y_continuous(labels = scales::comma)
+
+# majority of homelessness is taking place in major cities
+```
+
+
+
+
