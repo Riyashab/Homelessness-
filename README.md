@@ -11,7 +11,10 @@ This project explores homelessness trends in San Diego and across the U.S., focu
 Throughout this project, R was used to visualize demographic trends and analyze homelessness data.
 
 ![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)
-![Homelessness by CA County]()
+![Homelessness by CA County](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20county.png)
+![Homelesssness by Sex](
+![Homelessness by Race](
+![Homelessness among Veterans](
 
 ## Power BI Dashboard
 Power BI was utilized to create interactive dashboards highlighting:
