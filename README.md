@@ -16,22 +16,23 @@ Throughout this project, R was used to visualize demographic trends and analyze 
 *Figure 2: Homelessness by County in California*
 ![Homelesssness by Sex](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20sex.png)
 *Figure 3: Homelessness by Sex*
-![Homelessness by Race](https://github.com/Riyashab/Homelessness-/blob/main/Homelessness%20by%20race%20R.png)
-
+![Homelessness by Race](https://github.com/Riyashab/Homelessness-/blob/main/Homelessness%20by%20race%20R.png) (https://github.com/Riyashab/Homelessness-/blob/main/race%202.png)
 *Figure 4 & 5: Homelessness by Race*
-
-![Homelessness among Veterans](
+![Homelessness among Veterans](https://github.com/Riyashab/Homelessness-/blob/main/veterans.png)
+*Figure 6: Homelessness among veterans*
 
 ## Power BI Dashboard
-Power BI was utilized to create interactive dashboards highlighting:
-- Homelessness trends by state, age, and race.
-- Trends in chronic homelessness and drug overdoses.
 
-![Homelessness by State](Homelessness_by_State.png)
+We used Power BI to analyze and visualize homelessness and related trends across the U.S. and California. The dashboard includes interactive visuals showcasing homelessness by state, age, and race, trends in chronic homelessness, and the impact of drug overdoses. The slicers give detailed filtering by year and demographics to gain deeper insights.
 
-## Data Sources
-- **U.S. Department of Housing and Urban Development**
-- **CDC National Center for Health Statistics**
+## Key Insights:
+- Homelessness Trends: California and New York have the highest homelessness rates.
+- Post-2020 increase in homelessness linked to the pandemic
+- Chronic Homelessness: PSH beds are increasing, but chronic homelessness remains a challenge.
+- Drug Overdose in California: Opioids and synthetic drugs are the leading causes of overdose deaths.
+- 	Demographics: The 	35–44 age group and racial minorities are most affected and Veteran homelessness is steadily declining.
+
+
 
 ---
 
