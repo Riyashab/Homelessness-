@@ -20,7 +20,7 @@ Throughout this project, R was used to visualize demographic trends and analyze 
   <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/Homelessness%20by%20race%20R.png" alt="Homelessness by Race 1" width="45%">
   <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/race%202.png" alt="Homelessness by Race 2" width="45%">
 </div>  
-*Figure 4 & 5: Homelessness by Race*
+Figure 4 & 5: Homelessness by Race
 
 ![Homelessness among Veterans](https://raw.githubusercontent.com/Riyashab/Homelessness-/main/veterans.png)  
 *Figure 6: Homelessness among Veterans*
