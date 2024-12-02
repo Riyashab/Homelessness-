@@ -201,6 +201,830 @@ ggplot(PIT_Counts_by_County_CA_Area,
 # majority of homelessness is taking place in major cities
 ```
 
+## Homelessness Data Cleaning (using a data set that can be downloaded here: https://www.huduser.gov/portal/sites/default/files/xls/2007-2022-PIT-Counts-by-CoC.xlsx) --> renamed to "homelessness_data.xlsx" in the data folder.
+
+```{r}
+# Cleaning and subseting the data
+census_race <- census_race[c(39, 40, 41, 46, 54, 59, 60), 1:2]
+colnames(census_race) <- c("race", "count")
+
+# Cleaning 'race' and converting 'count' to numeric, handling non-numeric values
+census_race <- census_race %>%
+  mutate(
+    # Removing unnecessary spaces or non-breaking spaces
+    race = sub("^\\s*[\u00a0]*", "", race),
+    
+    # Removing non-numeric characters and convert to numeric
+    count = as.numeric(gsub("[^0-9]", "", count)),  # Remove anything that's not a number
+    
+    # Replacing NA values in 'count' with 0 (or keep them as NA if preferred)
+    count = ifelse(is.na(count), 0, count),  # You can replace NA with 0, or keep NA depending on your preference
+    
+    # Calculating percentage for each race group
+    pct = round(100 * count / sum(count, na.rm = TRUE), 1),
+    
+    # Adding source column to indicate the data source
+    source = "Census"
+  )
+
+# Define the path to your Excel file (update this path as needed)
+path <- "data/homelessness_data.xlsx"  # Adjust to the correct path
+
+# Read each sheet from the Excel file into a list
+homeless_list <- path %>%
+  excel_sheets() %>%
+  set_names() %>%
+  purrr::map(read_excel, path = path)
+
+# Standardize column names for each sheet
+for(i in 1:13){
+  names(homeless_list[[i]]) <- str_remove(names(homeless_list[[i]]), ", \\d+")  # Remove any numeric suffixes in column names
+}
+
+# Combine the data from all sheets into one data frame, adding a 'year' column as an ID
+homeless <- bind_rows(homeless_list[1:13], .id = "year")
+
+# Replace spaces in column names with underscores for consistency
+names(homeless) <- str_replace_all(names(homeless), " ", "_")
+
+# Filter out the 'Total' rows (aggregate data) to keep only individual data
+homeless <- homeless %>% filter(CoC_Name != "Total")
+
+# Clean up unnecessary objects from the environment
+rm(homeless_list, i, path)  # Only remove objects you're done with
+
+# Optionally update global plot settings (e.g., center plot titles)
+theme_update(plot.title = element_text(hjust = 0.5))
+
+# Now your 'census_race' and 'homeless' data frames should be ready for further analysis or visualization.
+```
+
+##Homeless in the USA Over Time (Sheltered V. Unsheltered)
+```{r}
+counts <- homeless %>%
+  group_by(year) %>%
+  summarize( sheltered = sum(Sheltered_Total_Homeless),
+            unsheltered = sum(Unsheltered_Homeless)) %>%
+  pivot_longer(unsheltered:sheltered, names_to = "category", values_to = "pop") %>%
+  mutate(category = factor(category, levels = c("unsheltered", "sheltered")))
+  
+
+ggplot(counts, aes(x = year, y = pop, fill = category)) +
+  geom_bar(stat = "identity", width = 0.7) +
+  labs(
+    title = "Homelessness in the US",
+    x = "Year",
+    y = "Population",
+    fill = "Category"
+  ) +
+  scale_fill_manual(values = c("sheltered" = "#4682B4", "unsheltered" = "#B0C4DE"),
+                    labels = c("Unsheltered", "Sheltered")) +
+  theme(text = element_text(family = "serif")) +
+  scale_y_continuous(labels = scales::comma)
+```
+
+##Homelessness Bar Chart Stacked Over Time
+
+```{r}
+homeless %>%
+  group_by(year) %>%
+  summarize(total_female = sum(`Overall_Homeless_-_Female`, na.rm = TRUE),
+            total_male = sum(`Overall_Homeless_-_Male`, na.rm = TRUE)) %>%
+  filter(year != 2021, total_female > 0) %>%
+  pivot_longer(total_female:total_male, names_to = 'gender', values_to = 'population') %>%
+  ggplot(aes(year, population, fill = gender)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_manual(values = c("total_female" = "#D19494", "total_male" = "#94AED1"), labels = c("Total Female", "Total Male")) +
+  theme(text = element_text(family = "serif")) +
+  labs(x = "Year", y = "Population", fill = "Sex", title = "Homeless Populations by Year and Sex")
+```
+
+##Homelessness Population in USA by Gender
+
+```{r}
+# Data Prep
+homeless %>%
+  group_by(year) %>%
+  summarize(
+    total_female = sum(`Overall_Homeless_-_Female`, na.rm = TRUE),
+    total_male = sum(`Overall_Homeless_-_Male`, na.rm = TRUE)
+  ) %>%
+  filter(year != 2023, total_female > 0 | total_male > 0) %>%  # Filter out years with no data
+  pivot_longer(
+    cols = c(total_female, total_male), 
+    names_to = 'gender', 
+    values_to = 'population'
+  ) %>%
+  mutate(gender = recode(gender, 
+                         total_female = "Female", 
+                         total_male = "Male")) %>%  # Rename gender values
+  ggplot(aes(x = year, y = population, fill = gender)) +
+  geom_bar(stat = "identity", position = "dodge") +  # 'dodge' for separate bars for each gender
+  scale_y_continuous(labels = scales::comma) +
+  scale_fill_manual(
+    values = c("Female" = "#D19494", "Male" = "#94AED1"),
+    labels = c("Female", "Male")
+  ) +
+  labs(
+    x = "Year", 
+    y = "Homeless Population", 
+    fill = "Sex", 
+    title = "Homeless Populations by Year and Sex"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1)  # Rotate x-axis labels for readability
+  ) +
+  facet_wrap(~gender)  # Facet by gender
+
+```
+
+##Homelessness Population in California by Gender
+
+```{r}
+# Data prep
+homeless %>%
+  filter(grepl("^CA-", CoC_Number)) %>%
+  group_by(year) %>%
+  summarize(
+    total_female = sum(`Overall_Homeless_-_Female`, na.rm = TRUE),
+    total_male = sum(`Overall_Homeless_-_Male`, na.rm = TRUE)
+  ) %>%
+  filter(year != 2023, total_female > 0 | total_male > 0) %>%  # Remove rows with no data
+  pivot_longer(
+    cols = c(total_female, total_male), 
+    names_to = 'gender', 
+    values_to = 'population'
+  ) %>%
+  mutate(gender = recode(gender, 
+                         total_female = "Female", 
+                         total_male = "Male")) %>%  # Rename gender values
+  ggplot(aes(x = year, y = population, fill = gender)) +
+  geom_bar(stat = "identity", position = "dodge") +  # Separate bars for each gender
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(
+    values = c("Female" = "#D19494", "Male" = "#94AED1"), 
+    labels = c("Female", "Male")
+  ) +  # Custom colors for each gender
+  labs(
+    x = "Year", 
+    y = "Homeless Population", 
+    fill = "Sex", 
+    title = "Homeless Populations in California by Year and Sex"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1)  # Rotate x-axis labels for readability
+  ) +
+  facet_wrap(~gender)  # Facet by gender
+```
+
+##By Race Homeless Population Nationwide
+
+```{r}
+# Data preparation
+homeless_race <- homeless %>% 
+  group_by(year) %>% 
+  summarize('White' = sum(`Overall_Homeless_-_White`, na.rm = TRUE),
+            'Black or African American' = sum(`Overall_Homeless_-_Black,_African_American,_or_African`, na.rm = TRUE),
+            'Asian' = sum(`Overall_Homeless_-_Asian_or_Asian_American`, na.rm = TRUE),
+            'American Indian and Alaska Native' = sum(`Overall_Homeless_-_American_Indian,_Alaska_Native,_or_Indigenous`, na.rm = TRUE),
+            'Native Hawaiian and Other Pacific Islander' = sum(`Overall_Homeless_-_Native_Hawaiian_or_Other_Pacific_Islander`, na.rm = TRUE),
+            'Two or More Races' = sum(`Overall_Homeless_-_Multiple_Races`, na.rm = TRUE)) %>%
+  filter(year == 2022) %>%
+  pivot_longer('White':'Two or More Races', names_to = 'race', values_to = 'count') %>%
+  mutate(source = "HUD", pct = round(100 * count / sum(count), 1)) %>%
+  select(-year) %>%
+  bind_rows(census_race)
+
+# Filtering for only Homeless Population
+homeless_race <- homeless_race %>%
+  filter(source == "HUD")
+
+# Color palette
+my_color_palette <- c("#5E7D81", "#A78C61", "#7E9774", "#A39597", "#6F72A0", "#B58B87", "#7B88A0")
+
+# Faceted bar chart for Homeless Population only
+ggplot(homeless_race, aes(x = race, y = pct, fill = race)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  scale_fill_manual(values = my_color_palette) +
+  geom_text(aes(label = ifelse(pct < 4, "", paste0(pct, "%"))), 
+            position = position_stack(vjust = 0.5), family = "serif") +
+  labs(title = "Racial Makeup of the Homeless Population (2022)") +
+  theme(text = element_text(family = "serif"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid = element_blank(),
+        legend.position = "none")
+```
+
+##Homeless Population by race, faceted by years.Bar Chart (Error - missing data on certain demographics)
+
+```{r}
+homeless_race <- homeless %>% 
+  group_by(year) %>% 
+  summarize(
+    'White' = sum(`Overall_Homeless_-_White`, na.rm = TRUE),
+    'Black or African American' = sum(`Overall_Homeless_-_Black,_African_American,_or_African`, na.rm = TRUE),
+    'Asian' = sum(`Overall_Homeless_-_Asian_or_Asian_American`, na.rm = TRUE),
+    'American Indian and Alaska Native' = sum(`Overall_Homeless_-_American_Indian,_Alaska_Native,_or_Indigenous`, na.rm = TRUE),
+    'Native Hawaiian and Other Pacific Islander' = sum(`Overall_Homeless_-_Native_Hawaiian_or_Other_Pacific_Islander`, na.rm = TRUE),
+    'Two or More Races' = sum(`Overall_Homeless_-_Multiple_Races`, na.rm = TRUE)
+  ) %>%
+  filter(year >= 2015 & year <= 2022) %>%
+  pivot_longer(cols = 'White':'Two or More Races', names_to = 'race', values_to = 'count') %>%
+  
+  # Filling  missing categories (NA) for the years 2015 to 2021 (no data for some categories)
+  mutate(count = ifelse(count == 0, NA, count)) %>%  # Marking zeros as NAs (to prevent misallocation)
+  
+  #Calculating the total population for each year
+  group_by(year) %>%
+  mutate(
+    total_count = sum(count, na.rm = TRUE),  # Total count for the year (sum only non-NA values)
+    pct = ifelse(total_count == 0, 0, round(100 * count / total_count, 1))  # Calcing %
+  ) %>%
+  select(year, race, pct)  # Keeping only the necessary columns
+
+#color pallete
+my_color_palette <- c("#5E7D81", "#A78C61", "#7E9774", "#A39597", "#6F72A0", "#B58B87", "#7B88A0")
+
+# Create the faceted bar chart
+ggplot(homeless_race, aes(x = race, y = pct, fill = race)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  scale_fill_manual(values = my_color_palette) +
+  geom_text(aes(label = ifelse(pct < 4, "", paste0(pct, "%"))),
+            position = position_stack(vjust = 0.5), family = "serif") +
+  labs(title = "Racial Makeup of the Homeless Population (2015 - 2022)", 
+       x = "Race", 
+       y = "Percentage of Homeless Population") +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  
+    panel.grid = element_blank(),
+    legend.position = 
+  ) +
+  facet_wrap(~year, scales = "free_y")
+```
+
+#By Race Homeless Population California
+
+```{r}
+# Data preparation for California
+homeless_race <- homeless %>% 
+  filter(grepl("^CA-", CoC_Number)) %>%  # Filter for California data
+  group_by(year) %>% 
+  summarize(
+    'White' = sum(`Overall_Homeless_-_White`, na.rm = TRUE),
+    'Black or African American' = sum(`Overall_Homeless_-_Black,_African_American,_or_African`, na.rm = TRUE),
+    'Asian' = sum(`Overall_Homeless_-_Asian_or_Asian_American`, na.rm = TRUE),
+    'American Indian and Alaska Native' = sum(`Overall_Homeless_-_American_Indian,_Alaska_Native,_or_Indigenous`, na.rm = TRUE),
+    'Native Hawaiian and Other Pacific Islander' = sum(`Overall_Homeless_-_Native_Hawaiian_or_Other_Pacific_Islander`, na.rm = TRUE),
+    'Two or More Races' = sum(`Overall_Homeless_-_Multiple_Races`, na.rm = TRUE)
+  ) %>%
+  filter(year == 2022) %>%  # Keep only data for 2022
+  pivot_longer('White':'Two or More Races', names_to = 'race', values_to = 'count') %>%
+  mutate(source = "HUD", pct = round(100 * count / sum(count), 1)) %>%  # Calculate percentages
+  select(-year)
+
+# Color palette
+my_color_palette <- c("#5E7D81", "#A78C61", "#7E9774", "#A39597", "#6F72A0", "#B58B87", "#7B88A0")
+
+# Faceted bar chart for California Homeless Population only
+ggplot(homeless_race, aes(x = race, y = pct, fill = race)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  scale_fill_manual(values = my_color_palette) +
+  geom_text(aes(label = ifelse(pct < 4, "", paste0(pct, "%"))), 
+            position = position_stack(vjust = 0.5), family = "serif") +
+  labs(title = "Racial Makeup of the Homeless Population in California (2022)") +
+  theme(
+    text = element_text(family = "serif"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid = element_blank(),
+    legend.position = "none"
+  )
+
+```
+
+##By Race Homeless Population Nationwide
+```{r}
+ggplot(homeless_race_sd, aes(x = race, y = pct, fill = race)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  scale_fill_manual(values = my_color_palette) +
+  geom_text(aes(label = paste0(pct, "%")), 
+            position = position_stack(vjust = 0.5), family = "serif", color = "white") +  # Place text inside with white color
+  labs(title = "Racial Makeup of the Homeless Population in San Diego (2022)") +
+  theme(
+    text = element_text(family = "serif"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    axis.text.x = element_text(angle = 30, hjust = 1),
+    panel.grid = element_blank(),
+    legend.position = "none"
+  )
+
+
+```
+
+##Latino/Hispanic Homelessness USA
+```{r}
+# Data preparation for Non-Hispanic/Non-Latino and Hispanic/Latino categories
+homeless_ethnicity <- homeless %>% 
+  group_by(year) %>% 
+  summarize('Non-Hispanic/Non-Latino' = sum(`Overall_Homeless_-_Non-Hispanic/Non-Latino`, na.rm = TRUE),
+            'Hispanic/Latino' = sum(`Overall_Homeless_-_Hispanic/Latino`, na.rm = TRUE)) %>%
+  filter(year == 2022) %>%
+  pivot_longer('Non-Hispanic/Non-Latino':'Hispanic/Latino', names_to = 'ethnicity', values_to = 'count') %>%
+  mutate(pct = round(100 * count / sum(count), 1)) # Calculate percentages
+
+# Color palette for ethnic categories
+ethnicity_color_palette <- c("#E8A9A4", "#69A8D9")
+
+# Bar chart for Ethnicity
+ggplot(homeless_ethnicity, aes(x = ethnicity, y = pct, fill = ethnicity)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  scale_fill_manual(values = ethnicity_color_palette) +
+  geom_text(aes(label = ifelse(pct < 4, "", paste0(pct, "%"))), 
+            position = position_stack(vjust = 0.5), family = "serif") +
+  labs(title = "Homeless Population by Ethnicity (2022)") +
+  theme(text = element_text(family = "serif"),
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid = element_blank(),
+        legend.position = "none")
+
+```
+
+##Latino/Hispanic Homeless Population California
+```{r}
+# Data preparation for California (Hispanic/Latino vs Non-Hispanic/Latino)
+homeless_ethnicity <- homeless %>%
+  filter(grepl("^CA-", CoC_Number), year == 2022) %>%  # Filter for California and 2022
+  summarize(
+    'Hispanic or Latino' = sum(`Overall_Homeless_-_Hispanic/Latino`, na.rm = TRUE),
+    'Non-Hispanic or Latino' = sum(`Overall_Homeless_-_Non-Hispanic/Non-Latino`, na.rm = TRUE)
+  ) %>%
+  pivot_longer(
+    'Hispanic or Latino':'Non-Hispanic or Latino', 
+    names_to = 'ethnicity', 
+    values_to = 'count'
+  ) %>%
+  mutate(
+    pct = round(100 * count / sum(count), 1)  # Calculate percentages
+  )
+
+# Total count for subtitle
+total_count <- sum(homeless_ethnicity$count)
+
+# Color palette
+ethnicity_palette <- c("#FFA07A", "#87CEEB")  # Custom colors for the categories
+
+# Bar chart for Hispanic/Latino vs Non-Hispanic/Latino in California
+ggplot(homeless_ethnicity, aes(x = ethnicity, y = pct, fill = ethnicity)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  scale_fill_manual(values = ethnicity_palette) +
+  geom_text(aes(label = paste0(pct, "%")), vjust = -0.5, family = "serif") +
+  labs(
+    title = "Hispanic/Latino vs Non-Hispanic/Latino in Homeless Population (California, 2022)",
+    subtitle = paste("Total Homeless Population in California:", total_count),
+    y = "Percentage of Homeless Population",
+    x = NULL
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 0, hjust = 0.5),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    panel.grid = element_blank(),
+    legend.position = "none"
+  )
+
+```
+
+##Latino/Hispanic Homelessness San Diegp
+```{r}
+# Data preparation for San Diego (Hispanic/Latino vs Non-Hispanic/Latino)
+homeless_ethnicity_sd <- homeless %>%
+  filter(CoC_Number == "CA-601", year == 2022) %>%  # Filter for San Diego CoC and 2022
+  summarize(
+    'Hispanic or Latino' = sum(`Overall_Homeless_-_Hispanic/Latino`, na.rm = TRUE),
+    'Non-Hispanic or Latino' = sum(`Overall_Homeless_-_Non-Hispanic/Non-Latino`, na.rm = TRUE)
+  ) %>%
+  pivot_longer(
+    'Hispanic or Latino':'Non-Hispanic or Latino', 
+    names_to = 'ethnicity', 
+    values_to = 'count'
+  ) %>%
+  mutate(
+    pct = round(100 * count / sum(count), 1)  # Calculate percentages
+  )
+
+# Total count for subtitle
+total_count_sd <- sum(homeless_ethnicity_sd$count)
+
+# Color palette
+ethnicity_palette_sd <- c("#FFA07A", "#87CEEB")  # Custom colors for the categories
+
+# Bar chart for Hispanic/Latino vs Non-Hispanic/Latino in San Diego
+ggplot(homeless_ethnicity_sd, aes(x = ethnicity, y = pct, fill = ethnicity)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  scale_fill_manual(values = ethnicity_palette_sd) +
+  geom_text(aes(label = paste0(pct, "%")), vjust = -0.5, family = "serif") +
+  labs(
+    title = "Hispanic/Latino & Non-Hispanic/Latino Homeless Population (San Diego, 2022)",
+    subtitle = paste("Total Homeless Population in San Diego:", total_count_sd),
+    y = "Percentage of Homeless Population",
+    x = "Ethnicity"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 0, hjust = 0.5),
+    axis.title.y = element_text(margin = margin(r = 10)),
+    panel.grid = element_blank(),
+    legend.position = "none"
+  )
+
+```
+
+##
+```{r}
+# Data preparation for San Diego (Men vs Women)
+homeless %>%
+  filter(CoC_Number == "CA-601") %>%  # Filter for San Diego CoC
+  group_by(year) %>%
+  summarize(
+    total_female = sum(`Overall_Homeless_-_Female`, na.rm = TRUE),
+    total_male = sum(`Overall_Homeless_-_Male`, na.rm = TRUE)
+  ) %>%
+  filter(total_female > 0 | total_male > 0) %>%  # Remove rows with no data
+  pivot_longer(
+    cols = c(total_female, total_male), 
+    names_to = 'gender', 
+    values_to = 'population'
+  ) %>%
+  mutate(
+    gender = recode(gender, 
+                    total_female = "Female", 
+                    total_male = "Male")  # Rename gender values
+  ) %>%
+  ggplot(aes(x = factor(year), y = population, fill = gender)) +  # Convert year to factor for control
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +  # Create grouped bars
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(
+    values = c("Female" = "#D19494", "Male" = "#94AED1"),  # Custom colors for genders
+    labels = c("Female", "Male")
+  ) + 
+  labs(
+    x = "Year", 
+    y = "Homeless Population", 
+    fill = "Sex", 
+    title = "Homeless Populations in San Diego by Year and Sex"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank()  # Remove vertical gridlines
+  ) +
+  facet_wrap(~gender, ncol = 1)  # Optional: Separate facets by gender
+
+```
+
+```{r}
+# Data preparation for San Diego (Men vs Women)
+homeless %>%
+  filter(CoC_Number == "CA-601") %>%  # Filter for San Diego CoC
+  group_by(year) %>%
+  summarize(
+    total_female = sum(`Overall_Homeless_-_Female`, na.rm = TRUE),
+    total_male = sum(`Overall_Homeless_-_Male`, na.rm = TRUE)
+  ) %>%
+  filter(total_female > 0 | total_male > 0) %>%  # Remove rows with no data
+  pivot_longer(
+    cols = c(total_female, total_male), 
+    names_to = 'gender', 
+    values_to = 'population'
+  ) %>%
+  mutate(
+    gender = recode(gender, 
+                    total_female = "Female", 
+                    total_male = "Male")  # Rename gender values
+  ) %>%
+  ggplot(aes(x = factor(year), y = population, fill = gender)) +  # Convert year to factor for control
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +  # Create grouped bars
+  geom_text(
+    aes(label = scales::comma(population)),  # Display population with commas
+    position = position_dodge(width = 0.7), 
+    vjust = -0.5, 
+    family = "serif"
+  ) + 
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(
+    values = c("Female" = "#D19494", "Male" = "#94AED1"),  # Custom colors for genders
+    labels = c("Female", "Male")
+  ) + 
+  labs(
+    x = "Year", 
+    y = "Homeless Population", 
+    fill = "Sex", 
+    title = "Homeless Populations in San Diego by Year and Sex"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank()  # Remove vertical gridlines
+  )
+
+```
+
+##Homeless Vets in San Diego
+```{r}
+# Create a bar chart to visualize the trend for San Diego starting from 2011
+ggplot(homeless_veterans_sd, aes(x = factor(year), y = homeless_veterans)) + 
+  geom_bar(stat = "identity", color = "black", fill = "#006400", width = 0.7) +  # Set fill to dark green
+  geom_text(aes(label = homeless_veterans), vjust = -0.5, family = "serif") +  # Add labels above bars
+  labs(
+    title = "Homeless Veterans in San Diego (2011 to 2022)",  # Title for San Diego data
+    x = "Year",
+    y = "Number of Homeless Veterans"
+  ) +
+  theme_minimal(base_family = "serif") +  # Clean theme with serif font
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for clarity
+    panel.grid.major = element_line(color = "grey80"),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"  # Remove legend
+  )
+
+
+```
+
+##Homeless Vets Nationwide
+```{r}
+# Create a bar chart to visualize the trend across all CoCs, starting from 2011
+ggplot(homeless_veterans_all, aes(x = factor(year), y = homeless_veterans)) + 
+  geom_bar(stat = "identity", color = "black", fill = "#006400", width = 0.7) +  # Set fill to dark green
+  geom_text(aes(label = homeless_veterans), vjust = -0.5, family = "serif") +  # Add labels above bars
+  labs(
+    title = "Homeless Veterans Nationwide (2011 to 2022)",  # Updated title for the filtered data
+    x = "Year",
+    y = "Number of Homeless Veterans"
+  ) +
+  theme_minimal(base_family = "serif") +  # Clean theme with serif font
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for clarity
+    panel.grid.major = element_line(color = "grey80"),
+    panel.grid.minor = element_blank(),
+    legend.position = "none"  # Remove legend
+  )
+
+```
+
+##Trans Homeless Population Nationwide
+```{r}
+# Data preparation for Transgender homeless population nationwide
+homeless %>%
+  group_by(year) %>%
+  summarize(
+    total_transgender = sum(`Overall_Homeless_-_Transgender`, na.rm = TRUE)  # Aggregate Transgender population nationwide
+  ) %>%
+  filter(total_transgender > 0) %>%  # Only include years with reported Transgender individuals
+  ggplot(aes(x = factor(year), y = total_transgender, fill = "Transgender")) +  # Use year as x-axis and fixed fill color
+  geom_bar(stat = "identity", color = "black", width = 0.7) +  # Create bar chart
+  geom_text(
+    aes(label = scales::comma(total_transgender)),  # Display population with commas
+    vjust = -0.5, 
+    family = "serif"
+  ) + 
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(values = c("Transgender" = "#8042c2")) +  # Set a fixed color for Transgender
+  labs(
+    title = "Homeless Transgender Population Nationwide by Year", 
+    x = "Year", 
+    y = "Number of Transgender Homeless Individuals"
+  ) +
+  theme_minimal(base_family = "serif") +  # Minimal theme with serif font
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank(),  # Remove vertical gridlines
+    legend.position = "none"  # Hide the legend
+  )
+
+
+```
+
+
+##Trans Homeless Population in California
+```{r}
+# Data preparation for Transgender homeless population in California
+homeless %>%
+  filter(str_starts(CoC_Number, "CA")) %>%  # Filter for California (all CoCs starting with "CA")
+  group_by(year) %>%
+  summarize(
+    total_transgender = sum(`Overall_Homeless_-_Transgender`, na.rm = TRUE)  # Focus only on Transgender
+  ) %>%
+  filter(total_transgender > 0) %>%  # Only include years where there are Transgender individuals
+  ggplot(aes(x = factor(year), y = total_transgender, fill = "Transgender")) +  # Use year as x-axis and fixed fill color
+  geom_bar(stat = "identity", color = "black", width = 0.7) +  # Create bar chart
+  geom_text(
+    aes(label = scales::comma(total_transgender)),  # Display population with commas
+    vjust = -0.5, 
+    family = "serif"
+  ) + 
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(values = c("Transgender" = "#8042c2")) +  # Set a fixed color for Transgender
+  labs(
+    title = "Homeless Transgender Population in California by Year", 
+    x = "Year", 
+    y = "Number of Transgender Homeless Individuals"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank()  # Remove vertical gridlines
+  )
+
+```
+
+##Trans Homeless Population in San Diego
+```{r}
+# Data preparation for Transgender homeless population in San Diego
+homeless %>%
+  filter(CoC_Number == "CA-601") %>%  # Filter for San Diego CoC
+  group_by(year) %>%
+  summarize(
+    total_transgender = sum(`Overall_Homeless_-_Transgender`, na.rm = TRUE)  # Focus only on Transgender
+  ) %>%
+  filter(total_transgender > 0) %>%  # Only include years with reported Transgender individuals
+  ggplot(aes(x = factor(year), y = total_transgender, fill = "Transgender")) +  # Use year as x-axis and fixed fill color
+  geom_bar(stat = "identity", color = "black", width = 0.7) +  # Create bar chart
+  geom_text(
+    aes(label = scales::comma(total_transgender)),  # Display population with commas
+    vjust = -0.5, 
+    family = "serif"
+  ) + 
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(values = c("Transgender" = "#8042c2")) +  # Set a fixed color for Transgender
+  labs(
+    title = "Homeless Transgender Population in San Diego by Year", 
+    x = "Year", 
+    y = "Number of Transgender Homeless Individuals"
+  ) +
+  theme_minimal(base_family = "serif") +  # Minimal theme with serif font
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank(),  # Remove vertical gridlines
+    legend.position = "none"  # Hide the legend
+  )
+
+```
+
+
+##Age Groups Homeless Nationwide
+```{r}
+# Data preparation for Nationwide by Age Range
+homeless_age_nationwide <- homeless %>% 
+  group_by(year) %>% 
+  summarize(
+    'Under 18' = sum(`Overall_Homeless_-_Under_18`, na.rm = TRUE),
+    'Age 18 to 24' = sum(`Overall_Homeless_-_Age_18_to_24`, na.rm = TRUE),
+    'Over 24' = sum(`Overall_Homeless_-_Over_24`, na.rm = TRUE)
+  ) %>%
+  filter(year == 2022) %>%  # Keep only data for 2022
+  pivot_longer('Under 18':'Over 24', names_to = 'age_range', values_to = 'count') %>%
+  mutate(
+    age_range = factor(age_range, levels = c("Under 18", "Age 18 to 24", "Over 24"))  # Set custom order
+  ) %>%
+  select(-year)
+
+# Bar chart for Age Range Distribution Nationwide (2022)
+ggplot(homeless_age_nationwide, aes(x = age_range, y = count, fill = age_range)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  geom_text(
+    aes(label = scales::comma(count)), 
+    position = position_stack(vjust = 0.5),  # Position labels inside bars
+    family = "serif",
+    color = "black"
+  ) +
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(
+    values = c("Under 18" = "#FFB6C1", "Age 18 to 24" = "#ADD8E6", "Over 24" = "#90EE90")  # Custom colors
+  ) +
+  labs(
+    title = "Homeless Individuals Nationwide by Age Range (2022)", 
+    x = "Age Range", 
+    y = "Number of Homeless Individuals",
+    fill = "Age Range"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank(),  # Remove vertical gridlines
+    legend.position = "none"
+  )
+
+
+
+```
+
+##Age Groups Homeless in California
+```{r}
+# Data preparation for California by Age Range
+homeless_age_ca <- homeless %>% 
+  filter(grepl("^CA-", CoC_Number)) %>%  # Filter for California CoCs
+  group_by(year) %>% 
+  summarize(
+    'Under 18' = sum(`Overall_Homeless_-_Under_18`, na.rm = TRUE),
+    'Age 18 to 24' = sum(`Overall_Homeless_-_Age_18_to_24`, na.rm = TRUE),
+    'Over 24' = sum(`Overall_Homeless_-_Over_24`, na.rm = TRUE)
+  ) %>%
+  filter(year == 2022) %>%  # Keep only data for 2022
+  pivot_longer('Under 18':'Over 24', names_to = 'age_range', values_to = 'count') %>%
+  mutate(
+    age_range = factor(age_range, levels = c("Under 18", "Age 18 to 24", "Over 24"))  # Set custom order
+  ) %>%
+  select(-year)
+
+# Bar chart for Age Range Distribution in California (2022)
+ggplot(homeless_age_ca, aes(x = age_range, y = count, fill = age_range)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  geom_text(
+    aes(label = scales::comma(count)), 
+    position = position_stack(vjust = 0.5),  # Position labels inside bars
+    family = "serif",
+    color = "black"
+  ) +
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(
+    values = c("Under 18" = "#FFB6C1", "Age 18 to 24" = "#ADD8E6", "Over 24" = "#90EE90")  # Custom colors
+  ) +
+  labs(
+    title = "Homeless Individuals in California by Age Range (2022)", 
+    x = "Age Range", 
+    y = "Number of Homeless Individuals",
+    fill = "Age Range"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank(),  # Remove vertical gridlines
+    legend.position = "none"
+  )
+
+```
+
+##Age Groups Homeless in San Diego
+```{r}
+# Data preparation for San Diego by Age Range
+homeless_age_sd <- homeless %>% 
+  filter(CoC_Number == "CA-601") %>%  # Filter for San Diego CoC
+  group_by(year) %>% 
+  summarize(
+    'Under 18' = sum(`Overall_Homeless_-_Under_18`, na.rm = TRUE),
+    'Age 18 to 24' = sum(`Overall_Homeless_-_Age_18_to_24`, na.rm = TRUE),
+    'Over 24' = sum(`Overall_Homeless_-_Over_24`, na.rm = TRUE)
+  ) %>%
+  filter(year == 2022) %>%  # Keep only data for 2022
+  pivot_longer('Under 18':'Over 24', names_to = 'age_range', values_to = 'count') %>%
+  mutate(
+    age_range = factor(age_range, levels = c("Under 18", "Age 18 to 24", "Over 24"))  # Set custom order
+  ) %>%
+  select(-year)
+
+# Bar chart for Age Range Distribution in San Diego (2022)
+ggplot(homeless_age_sd, aes(x = age_range, y = count, fill = age_range)) + 
+  geom_bar(stat = "identity", color = "black", width = 0.7) + 
+  geom_text(
+    aes(label = scales::comma(count)), 
+    position = position_stack(vjust = 0.5),  # Position labels inside bars
+    family = "serif",
+    color = "black"
+  ) +
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis with commas
+  scale_fill_manual(
+    values = c("Under 18" = "#FFB6C1", "Age 18 to 24" = "#ADD8E6", "Over 24" = "#90EE90")  # Custom colors
+  ) +
+  labs(
+    title = "Homeless Individuals in San Diego by Age Range (2022)", 
+    x = "Age Range", 
+    y = "Number of Homeless Individuals",
+    fill = "Age Range"
+  ) +
+  theme(
+    text = element_text(family = "serif"),
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels for readability
+    panel.grid.major.x = element_blank(),  # Remove vertical gridlines
+    legend.position = "none"
+  )
+
+```
+
 
 
 
