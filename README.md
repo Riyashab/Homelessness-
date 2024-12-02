@@ -12,7 +12,7 @@ Throughout this project, R was used to visualize demographic trends and analyze 
 
 ![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)
 ![Homelessness by CA County](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20county.png)
-![Homelesssness by Sex](
+![Homelesssness by Sex](h
 ![Homelessness by Race](
 ![Homelessness among Veterans](
 
