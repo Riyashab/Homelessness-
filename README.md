@@ -11,8 +11,11 @@ This project explores homelessness trends in San Diego and across the U.S., focu
 Throughout this project, R was used to visualize demographic trends and analyze homelessness data.
 
 ![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)
+*Figure 1: Homelessness by Age Group*
 ![Homelessness by CA County](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20county.png)
+*Figure 2: Homelessness by County in California*
 ![Homelesssness by Sex](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20sex.png)
+*Figure 3: Homelessness by Sex*
 ![Homelessness by Race](
 ![Homelessness among Veterans](
 
