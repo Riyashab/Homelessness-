@@ -10,7 +10,7 @@ This project explores trends in homelessness using R Studio and Power BI.
 ## R Visualizations
 Throughout this project, R was used for visualizing demographic trends and analyzing homelessness data.
 
-![Homelessness by Age Group]()
+![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)
 ![Urban vs. Rural Trends](Urban_vs_Rural.png)
 
 ## Power BI Dashboard
