@@ -16,7 +16,10 @@ Throughout this project, R was used to visualize demographic trends and analyze 
 *Figure 2: Homelessness by County in California*
 ![Homelesssness by Sex](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20sex.png)
 *Figure 3: Homelessness by Sex*
-![Homelessness by Race](https://github.com/Riyashab/Homelessness-/blob/main/Homelessness%20by%20race%20R.png) (https://github.com/Riyashab/Homelessness-/blob/main/race%202.png)
+<div style="display: flex; align-items: center; justify-content: space-between;">
+  <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/Homelessness%20by%20race%20R.png" alt="Homelessness by Race 1" width="45%">
+  <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/race%202.png" alt="Homelessness by Race 2" width="45%">
+</div>  
 *Figure 4 & 5: Homelessness by Race*
 ![Homelessness among Veterans](https://github.com/Riyashab/Homelessness-/blob/main/veterans.png)
 *Figure 6: Homelessness among veterans*
