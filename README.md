@@ -1,6 +1,6 @@
-# Homelessness Analysis in San Diego and the U.S.
+# Homelessness in San Diego, Factors that Impact Homelessness
 
-This project explores trends in homelessness using R Studio and Power BI.
+This project explores homelessness trends in San Diego and across the U.S., focusing on factors like urbanization and demographics. The analysis was conducted using R Studio and Power BI.
 
 ## Key Insights
 - **Age Group Analysis:** The 35–44 age group is the most affected, while seniors (65+) are least affected due to social programs.
@@ -8,10 +8,10 @@ This project explores trends in homelessness using R Studio and Power BI.
 - **Demographics:** Men, people of color, and veterans face higher risks of homelessness.
 
 ## R Visualizations
-Throughout this project, R was used for visualizing demographic trends and analyzing homelessness data.
+Throughout this project, R was used to visualize demographic trends and analyze homelessness data.
 
 ![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)
-![Urban vs. Rural Trends](Urban_vs_Rural.png)
+![Homelessness by CA County]()
 
 ## Power BI Dashboard
 Power BI was utilized to create interactive dashboards highlighting:
