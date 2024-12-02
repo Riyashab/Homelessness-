@@ -16,7 +16,10 @@ Throughout this project, R was used to visualize demographic trends and analyze 
 *Figure 2: Homelessness by County in California*
 ![Homelesssness by Sex](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20sex.png)
 *Figure 3: Homelessness by Sex*
-![Homelessness by Race](
+![Homelessness by Race](https://github.com/Riyashab/Homelessness-/blob/main/Homelessness%20by%20race%20R.png)
+
+*Figure 4 & 5: Homelessness by Race*
+
 ![Homelessness among Veterans](
 
 ## Power BI Dashboard
