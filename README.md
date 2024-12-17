@@ -22,24 +22,23 @@ This project explores **homelessness trends** in San Diego and across the United
 The following visualizations were created using **R Studio** to analyze and communicate homelessness trends:
 
 ## R Visualizations
+The following visualizations were created using **R Studio** to analyze and communicate homelessness trends:
 
 ### Homelessness by Age Group
-![Homelessness by Age Group](visualizations/homelessness_by_age.png)  
+![Homelessness by Age Group](visualizations/homelessness%20by%20age.png)  
 *Figure 1: Homelessness by Age Group*
 
 ### Homelessness by County in California
-![Homelessness by County](visualizations/homelessness_by_county.png)  
+![Homelessness by CA County](visualizations/homelessness%20by%20county.png)  
 *Figure 2: Homelessness by County in California*
 
 ### Homelessness by Sex
-![Homelessness by Sex](visualizations/homelessness_by_sex.png)  
+![Homelessness by Sex](visualizations/homelessness%20by%20sex.png)  
 *Figure 3: Homelessness by Sex*
 
 ### Homelessness by Race
-<div style="display: flex; align-items: center; justify-content: space-between;">
-  <img src="visualizations/homelessness_by_race.png" alt="Homelessness by Race 1" width="45%">
-  <img src="visualizations/race_2.png" alt="Homelessness by Race 2" width="45%">
-</div>  
+![Homelessness by Race 1](visualizations/Homelessness%20by%20race%20R.png)  
+![Homelessness by Race 2](visualizations/race%202.png)  
 *Figures 4 & 5: Homelessness by Race*
 
 ### Homelessness among Veterans
