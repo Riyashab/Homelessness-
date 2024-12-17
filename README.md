@@ -21,27 +21,29 @@ This project explores **homelessness trends** in San Diego and across the United
 
 The following visualizations were created using **R Studio** to analyze and communicate homelessness trends:
 
+## R Visualizations
+
 ### Homelessness by Age Group
-![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)  
+![Homelessness by Age Group](visualizations/homelessness_by_age.png)  
 *Figure 1: Homelessness by Age Group*
 
 ### Homelessness by County in California
-![Homelessness by CA County](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20county.png)  
+![Homelessness by County](visualizations/homelessness_by_county.png)  
 *Figure 2: Homelessness by County in California*
 
 ### Homelessness by Sex
-![Homelessness by Sex](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20sex.png)  
+![Homelessness by Sex](visualizations/homelessness_by_sex.png)  
 *Figure 3: Homelessness by Sex*
 
 ### Homelessness by Race
 <div style="display: flex; align-items: center; justify-content: space-between;">
-  <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/Homelessness%20by%20race%20R.png" alt="Homelessness by Race 1" width="45%">
-  <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/race%202.png" alt="Homelessness by Race 2" width="45%">
+  <img src="visualizations/homelessness_by_race.png" alt="Homelessness by Race 1" width="45%">
+  <img src="visualizations/race_2.png" alt="Homelessness by Race 2" width="45%">
 </div>  
 *Figures 4 & 5: Homelessness by Race*
 
 ### Homelessness among Veterans
-![Homelessness among Veterans](https://raw.githubusercontent.com/Riyashab/Homelessness-/main/veterans.png)  
+![Homelessness among Veterans](visualizations/veterans.png)  
 *Figure 6: Homelessness among Veterans*
 
 ---
