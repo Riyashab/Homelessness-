@@ -1,29 +1,56 @@
-# Homelessness in San Diego, Factors that Impact Homelessness
+## Homelessness in San Diego, Factors that Impact Homelessness
 
-This project explores homelessness trends in San Diego and across the U.S., focusing on factors like urbanization and demographics. The analysis was conducted using R Studio and Power BI.
+This project explores **homelessness trends** in San Diego and across the United States, highlighting key factors such as urbanization, demographics, and geographic variations. The analysis was performed using **R Studio** for data analysis and visualization and **Power BI** for creating dashboards.
+
+---
 
 ## Key Insights
-- **Age Group Analysis:** The 35–44 age group is the most affected, while seniors (65+) are least affected due to social programs.
-- **Urban vs. Rural:** Major cities have significantly higher homelessness rates than rural areas.
-- **Demographics:** Men, people of color, and veterans face higher risks of homelessness.
+
+- **Age Group Analysis:**  
+   The **35–44 age group** is the most affected by homelessness, while seniors (65+) are the least affected, likely due to the availability of social support programs.
+
+- **Urban vs. Rural:**  
+   Major cities exhibit **significantly higher homelessness rates** compared to rural areas, driven by economic pressures, population density, and resource availability.
+
+- **Demographics:**  
+   Specific groups, including **men**, **people of color**, and **veterans**, face a disproportionately **higher risk of homelessness**.
+
+---
 
 ## R Visualizations
-Throughout this project, R was used to visualize demographic trends and analyze homelessness data.
 
-![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)
+The following visualizations were created using **R Studio** to analyze and communicate homelessness trends:
+
+### Homelessness by Age Group
+![Homelessness by Age Group](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20age.png)  
 *Figure 1: Homelessness by Age Group*
-![Homelessness by CA County](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20county.png)
+
+### Homelessness by County in California
+![Homelessness by CA County](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20county.png)  
 *Figure 2: Homelessness by County in California*
-![Homelesssness by Sex](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20sex.png)
+
+### Homelessness by Sex
+![Homelessness by Sex](https://github.com/Riyashab/Homelessness-/blob/main/homelessness%20by%20sex.png)  
 *Figure 3: Homelessness by Sex*
+
+### Homelessness by Race
 <div style="display: flex; align-items: center; justify-content: space-between;">
   <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/Homelessness%20by%20race%20R.png" alt="Homelessness by Race 1" width="45%">
   <img src="https://raw.githubusercontent.com/Riyashab/Homelessness-/main/race%202.png" alt="Homelessness by Race 2" width="45%">
 </div>  
-Figure 4 & 5: Homelessness by Race
+*Figures 4 & 5: Homelessness by Race*
 
+### Homelessness among Veterans
 ![Homelessness among Veterans](https://raw.githubusercontent.com/Riyashab/Homelessness-/main/veterans.png)  
 *Figure 6: Homelessness among Veterans*
+
+---
+
+## Tools Used
+- **R Studio**: Data cleaning, analysis, and visualizations
+- **Power BI**: Interactive dashboards and visual insights
+- **GitHub**: Code and project management
+
 
 ## Power BI Dashboard
 
