@@ -1,0 +1,65 @@
+``{r}
+library(here)
+library(readxl)
+library(readxlsb)
+library(tidyverse)
+library(purrr)
+library(httr)
+library(readr)
+library(maps)
+library(dplyr)
+library(stringr)
+library(scales)
+library(ggplot2)
+library(viridis)
+
+```
+
+```{r}
+# Define the path to the "My Data" directory using here()
+my_data_path <- here("My Data")
+
+# Construct the full paths for each file
+file1 <- file.path(my_data_path, "2007-2023-HIC-Counts-by-CoC.xlsx")
+HIC_Counts_by_County <- read_excel(file1, skip = 1)
+HIC_Counts_by_County
+
+file2 <- file.path(my_data_path, "2007-2023-HIC-Counts-by-State.xlsx")
+HIC_Counts_by_State<- read_excel(file2, skip = 1)
+HIC_Counts_by_State
+
+file3 <- file.path(my_data_path, "2007-2023-PIT-Counts-by-CoC.xlsb")
+PIT_Counts_by_County<- read_xlsb(file3,
+                                 range = "2023!A1:XU387")
+PIT_Counts_by_County
+
+file4 <- file.path(my_data_path, "2007-2023-PIT-Counts-by-State.xlsb")
+PIT_Counts_by_State<- read_xlsb(file4,
+                                range = "2023!A1:XU387") 
+PIT_Counts_by_State
+
+file5 <- file.path(my_data_path, "2011-2023-PIT-Veteran-Counts-by-CoC.xlsx")
+PIT_Veteran_Counts_by_County<- read_excel(file5)
+PIT_Veteran_Counts_by_County
+
+file6 <- file.path(my_data_path, "2011-2023-PIT-Veteran-Counts-by-State.xlsx")
+PIT_Veteran_Counts_by_State<- read_excel(file6)
+PIT_Veteran_Counts_by_State
+
+file7 <- file.path(my_data_path, "2023-HIC-Counts-by-State.csv")
+HIC_Counts_by_State<- read.csv(file7)
+HIC_Counts_by_State
+
+file8 <- file.path(my_data_path, "Raw File.csv")
+Raw_File<-read.csv(file8)
+Raw_File
+
+file9 <- file.path(my_data_path, "VSRR_Provisional_Drug_Overdose_Death_Counts.csv")
+Drug_Death_Counts<-read.csv(file9)
+Drug_Death_Counts
+
+file10 <- file.path(my_data_path, "homelessness_data.xlsx")
+homelessness_data <- read_excel(file10)
+homelessness_data
+
+```
