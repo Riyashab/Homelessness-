@@ -37,7 +37,7 @@ The following visualizations were created using **R Studio** to analyze and comm
 *Figure 3: Homelessness by Sex*
 
 ### Homelessness by Race
-![Homelessness by Race ](visualizations/Homelessness%20by%20race%20R.png)  
+![Homelessness by Race 1](visualizations/homelessness_by_race_R.png) 
 ![Homelessness by Race 2](visualizations/race%202.png)  
 *Figures 4 & 5: Homelessness by Race*
 
